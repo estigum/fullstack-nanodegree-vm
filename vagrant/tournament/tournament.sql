@@ -5,5 +5,22 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
+DROP TABLE IF EXISTS Players;
+CREATE TABLE Players(
+id serial,
+username varchar(30),
+PRIMARY KEY(id));
 
+DROP TABLE IF EXISTS SwissTournament;
+CREATE TABLE SwissTournament(
+id serial,
+name varchar(30),
+PRIMARY KEY(id));
 
+DROP TABLE IF EXISTS TournamentResults;
+CREATE TABLE TournamentResults(
+tournamentId int,
+round int,
+winnerId int,
+loserId int,
+PRIMARY KEY(tournamentId,round));
