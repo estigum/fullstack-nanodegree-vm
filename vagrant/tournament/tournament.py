@@ -11,19 +11,69 @@ def connect():
     return psycopg2.connect("dbname=tournament")
 
 
-def deleteMatches():
+def deleteMatches(db, tournamentid):
     """Remove all the match records from the database."""
+    sql_text = "delete from TournamentResults where tournamentId=" + str(tournamentid)
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
 
-
-def deletePlayers():
+def deletePlayers(db):
     """Remove all the player records from the database."""
 
+    sql_text="delete from Players"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
 
-def countPlayers():
+
+def countPlayers(db):
     """Returns the number of players currently registered."""
+    sql_text="select count(*) from Players"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
+    for row in rows:
+        return row;
+    return 0
 
+def getPlayers(db):
 
-def registerPlayer(name):
+    sql_text="select * from Players"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
+    return rows
+
+def registerSwissTournament(db, name):
+
+    sql_text="insert into SwissTournament(name,rounds) values('" + name +"',0)"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
+
+def getSwissTournamentId(db,name):
+    sql_text="select id from SwissTournament where name='" + name +"'"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
+    for row in rows:
+        return row[0]
+    return 0
+
+def updateSwissTournamentRound(db,tournament_id,round):
+
+    sql_text="Update SwissTournament set rounds=" + str(round) + " where id=" + str(tournament_id)
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
+
+def deleteSwissTournaments(db):
+    sql_text="delete from SwissTournament"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
+def registerPlayer(name, db):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
@@ -32,9 +82,12 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    sql_text="insert into Players(username) values('" + name +"')"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
 
-
-def playerStandings():
+def playerStandings(db, tournament_id):
     """Returns a list of the players and their win records, sorted by wins.
 
     The first entry in the list should be the player in first place, or a player
@@ -47,25 +100,45 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    sql_text = "select tr.winnerid, count(*) as wins, p.username, st.rounds  from TournamentResults tr, Players p, SwissTournament st"
+    sql_text += " where tr.winnerid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id"
+    sql_text += " group by tr.winnerid, p.username, st.rounds order by wins desc"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
 
+    sql_text = "select distinct tr.loserid, 0 as wins, p.username, st.rounds from TournamentResults tr, Players p, SwissTournament st"
+    sql_text += " where tr.loserid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id and "
+    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults)"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    lrows = cursor.fetchall()
+    for row in lrows:
+        rows.append(row)
+    return rows
 
-def reportMatch(winner, loser):
+def reportMatch(winner, loser, tournamentid, current_round, db):
     """Records the outcome of a single match between two players.
 
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    sql_text = "insert into TournamentResults(tournamentId,round,winnerId,loserId) values("
+    sql_text += str(tournamentid) +"," + str(current_round) + "," + str(winner) + "," + str(loser) + ")"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    db.commit()
+
  
- 
-def swissPairings():
+def swissPairings(db):
     """Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
     player with an equal or nearly-equal win record, that is, a player adjacent
     to him or her in the standings.
-  
+
     Returns:
       A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
@@ -73,5 +146,55 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    #sql_text="select winnerid, count(*) as wins from TournamentResults group by winnerid order by wins"
+    sql_text = "select tr.winnerid, count(*) as wins, p.username  from TournamentResults tr, Players p where tr.winnerid=p.id"
+    sql_text += " group by tr.winnerid, p.username order by wins desc"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
+    pairing = 0
+    count = 0
+    swisspairing = []
+    for row in rows:
+        count +=1
+        if count % 2 != 0:
+            pairinglist = []
+            playerlist = []
+            playerlist.append(row[0])
+            playerlist.append(row[2])
+            pairinglist.append(playerlist)
+            swisspairing.append(pairinglist)
+        else:
+            pairinglist = swisspairing[pairing]
+            playerlist = []
+            playerlist.append(row[0])
+            playerlist.append(row[2])
+            pairinglist.append(playerlist)
+            pairing += 1
+
+    sql_text = "select distinct tr.loserid,p.username from TournamentResults tr, Players p where tr.loserid=p.id and "
+    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults)"
+    cursor = db.cursor()
+    cursor.execute(sql_text)
+    rows = cursor.fetchall()
+    for row in rows:
+        count +=1
+        if count % 2 != 0:
+            pairinglist = []
+            playerlist = []
+            playerlist.append(row[0])
+            playerlist.append(row[1])
+            pairinglist.append(playerlist)
+            swisspairing.append(pairinglist)
+        else:
+            pairinglist = swisspairing[pairing]
+            playerlist = []
+            playerlist.append(row[0])
+            playerlist.append(row[1])
+            pairinglist.append(playerlist)
+            pairing += 1
+
+    return swisspairing
+
 
 

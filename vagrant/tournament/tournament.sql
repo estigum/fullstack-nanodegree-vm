@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS SwissTournament;
 CREATE TABLE SwissTournament(
 id serial,
 name varchar(30),
+rounds int,
 PRIMARY KEY(id));
 
 DROP TABLE IF EXISTS TournamentResults;
@@ -22,5 +23,4 @@ CREATE TABLE TournamentResults(
 tournamentId int,
 round int,
 winnerId int,
-loserId int,
-PRIMARY KEY(tournamentId,round));
+loserId int);
