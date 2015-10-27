@@ -61,7 +61,7 @@ def testStandingsBeforeMatches():
     deletePlayers()
     registerPlayer("Melpomene Murray")
     registerPlayer("Randy Schwartz")
-    standings = playerStandings()
+    standings = playerStandings(1)
     if len(standings) < 2:
         raise ValueError("Players should appear in playerStandings even before "
                          "they have played any matches.")
@@ -82,15 +82,19 @@ def testStandingsBeforeMatches():
 def testReportMatches():
     deleteMatches()
     deletePlayers()
+    deleteSwissTournaments()
+    registerSwissTournament("Test")
+    tournament_id=getSwissTournamentId("Test")
     registerPlayer("Bruno Walton")
-    registerPlayer("Boots O'Neal")
+    registerPlayer("Boots ONeal")
     registerPlayer("Cathy Burton")
     registerPlayer("Diane Grant")
-    standings = playerStandings()
+    standings = playerStandings(tournament_id)
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
-    standings = playerStandings()
+    reportMatch(id1, id2,tournament_id,1)
+    reportMatch(id3, id4,tournament_id,1)
+    updateSwissTournamentRound(tournament_id,1)
+    standings = playerStandings(tournament_id)
     for (i, n, w, m) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
@@ -104,14 +108,18 @@ def testReportMatches():
 def testPairings():
     deleteMatches()
     deletePlayers()
+    deleteSwissTournaments()
+    registerSwissTournament("Test")
+    tournament_id=getSwissTournamentId("Test")
     registerPlayer("Twilight Sparkle")
     registerPlayer("Fluttershy")
     registerPlayer("Applejack")
     registerPlayer("Pinkie Pie")
-    standings = playerStandings()
+    standings = playerStandings(tournament_id)
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
+    reportMatch(id1, id2,tournament_id,1)
+    reportMatch(id3, id4,tournament_id,1)
+    updateSwissTournamentRound(tournament_id,1)
     pairings = swissPairings()
     if len(pairings) != 2:
         raise ValueError(

@@ -43,8 +43,8 @@ class SwissTournament(object):
         :return:
         """
         players = tournament.countPlayers(self.db)
-        print "Number of players " + str(players[0])
-        self.numplayers = players[0]
+        print "Number of players " + str(players)
+        self.numplayers = players
 
     def load_players_from_db(self):
         """
@@ -64,17 +64,13 @@ class SwissTournament(object):
                 self.players[player[0]] = player[1]
                 if count % 2 != 0:
                     pairinglist = []
-                    playerlist = []
-                    playerlist.append(player[0])
-                    playerlist.append(player[1])
-                    pairinglist.append(playerlist)
+                    pairinglist.append(player[0])
+                    pairinglist.append(player[1])
                     self.swisspairing.append(pairinglist)
                 else:
                     pairinglist = self.swisspairing[pairing]
-                    playerlist = []
-                    playerlist.append(player[0])
-                    playerlist.append(player[1])
-                    pairinglist.append(playerlist)
+                    pairinglist.append(player[0])
+                    pairinglist.append(player[1])
                     pairing += 1
 
     def play_round(self, tournament_id,current_round):
@@ -85,14 +81,14 @@ class SwissTournament(object):
         :return:
         """
 
-        for parings in self.swisspairing:
-            if len(parings) == 2:
+        for pairings in self.swisspairing:
+            if len(pairings) == 4:
                 aval = randint(0,9)
                 bval = randint(0,9)
                 if aval > bval:
-                    tournament.reportMatch(parings[0][0],parings[1][0],tournament_id,current_round,self.db)
+                    tournament.reportMatch(pairings[0],pairings[2],tournament_id,current_round,self.db)
                 else:
-                    tournament.reportMatch(parings[1][0],parings[0][0],tournament_id,current_round,self.db)
+                    tournament.reportMatch(pairings[2],pairings[0],tournament_id,current_round,self.db)
 
 def printStandings(results, round):
     """
@@ -104,7 +100,7 @@ def printStandings(results, round):
     print "Results for Round " + str(round)
     print("%5s %-20s %10s %10s" % ("id","Name","Wins","Rounds"))
     for result in results:
-        print("%5d %-20s %10d %10d" % (result[0], result[2], result[1], result[3]))
+        print("%5d %-20s %10d %10d" % (result[0], result[1], result[2], result[3]))
 
 def main():
     """
@@ -117,29 +113,33 @@ def main():
     myswiss.load_players_from_file("players.txt")
     myswiss.number_of_players()
     myswiss.load_players_from_db()
-    tournament.registerSwissTournament(myswiss.db,"Test Tournament")
-    tournament_id = tournament.getSwissTournamentId(myswiss.db,"Test Tournament")
+    tournament.registerSwissTournament("Test Tournament",myswiss.db)
+    tournament_id = tournament.getSwissTournamentId("Test Tournament",myswiss.db)
+
+    results= tournament.playerStandings(tournament_id,myswiss.db)
+    printStandings(results,1)
+
     myswiss.play_round(tournament_id,1)
-    tournament.updateSwissTournamentRound(myswiss.db,tournament_id,1)
-    results= tournament.playerStandings(myswiss.db,tournament_id)
+    tournament.updateSwissTournamentRound(tournament_id,1,myswiss.db)
+    results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,1)
 
     myswiss.swisspairing = tournament.swissPairings(myswiss.db)
     myswiss.play_round(tournament_id,2)
-    tournament.updateSwissTournamentRound(myswiss.db,tournament_id,2)
-    results= tournament.playerStandings(myswiss.db,tournament_id)
+    tournament.updateSwissTournamentRound(tournament_id,2,myswiss.db)
+    results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,2)
 
     myswiss.swisspairing = tournament.swissPairings(myswiss.db)
     myswiss.play_round(tournament_id,3)
-    results= tournament.playerStandings(myswiss.db,tournament_id)
+    results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,3)
 
-    tournament.updateSwissTournamentRound(myswiss.db,tournament_id,3)
+    tournament.updateSwissTournamentRound(tournament_id,3,myswiss.db)
     myswiss.swisspairing = tournament.swissPairings(myswiss.db)
     myswiss.play_round(tournament_id,4)
-    tournament.updateSwissTournamentRound(myswiss.db,tournament_id,4)
-    results= tournament.playerStandings(myswiss.db,tournament_id)
+    tournament.updateSwissTournamentRound(tournament_id,4,myswiss.db)
+    results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,4)
 
 if __name__ == "__main__":

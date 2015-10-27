@@ -11,30 +11,43 @@ def connect():
     return psycopg2.connect("dbname=tournament")
 
 
-def deleteMatches(db, tournamentid):
+def deleteMatches(db=None, tournamentid=None):
     """Remove all the match records from the database."""
-    sql_text = "delete from TournamentResults where tournamentId=" + str(tournamentid)
+    if not db:
+        db = connect()
+
+    sql_text = ""
+    if not tournamentid:
+        sql_text = "delete from TournamentResults"
+    else:
+        sql_text = "delete from TournamentResults where tournamentId=" + str(tournamentid)
+
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def deletePlayers(db):
+def deletePlayers(db=None):
     """Remove all the player records from the database."""
 
+    if not db:
+        db = connect()
     sql_text="delete from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
 
-def countPlayers(db):
+def countPlayers(db=None):
     """Returns the number of players currently registered."""
+
+    if not db:
+        db = connect()
     sql_text="select count(*) from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
-        return row;
+        return row[0];
     return 0
 
 def getPlayers(db):
@@ -45,14 +58,19 @@ def getPlayers(db):
     rows = cursor.fetchall()
     return rows
 
-def registerSwissTournament(db, name):
+def registerSwissTournament(name, db=None):
 
+    if not db:
+        db = connect()
     sql_text="insert into SwissTournament(name,rounds) values('" + name +"',0)"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def getSwissTournamentId(db,name):
+def getSwissTournamentId(name, db=None):
+
+    if not db:
+        db = connect()
     sql_text="select id from SwissTournament where name='" + name +"'"
     cursor = db.cursor()
     cursor.execute(sql_text)
@@ -61,19 +79,25 @@ def getSwissTournamentId(db,name):
         return row[0]
     return 0
 
-def updateSwissTournamentRound(db,tournament_id,round):
+def updateSwissTournamentRound(tournament_id,round, db=None):
 
+    if not db:
+        db = connect()
     sql_text="Update SwissTournament set rounds=" + str(round) + " where id=" + str(tournament_id)
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def deleteSwissTournaments(db):
+def deleteSwissTournaments(db=None):
+
+    if not db:
+        db = connect()
     sql_text="delete from SwissTournament"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
-def registerPlayer(name, db):
+
+def registerPlayer(name, db=None):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
@@ -82,12 +106,14 @@ def registerPlayer(name, db):
     Args:
       name: the player's full name (need not be unique).
     """
+    if not db:
+        db = connect()
     sql_text="insert into Players(username) values('" + name +"')"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def playerStandings(db, tournament_id):
+def playerStandings(tournament_id, db=None):
     """Returns a list of the players and their win records, sorted by wins.
 
     The first entry in the list should be the player in first place, or a player
@@ -100,14 +126,17 @@ def playerStandings(db, tournament_id):
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    sql_text = "select tr.winnerid, count(*) as wins, p.username, st.rounds  from TournamentResults tr, Players p, SwissTournament st"
+    if not db:
+        db = connect()
+
+    sql_text = "select tr.winnerid, p.username, count(*) as wins, st.rounds  from TournamentResults tr, Players p, SwissTournament st"
     sql_text += " where tr.winnerid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id"
     sql_text += " group by tr.winnerid, p.username, st.rounds order by wins desc"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
 
-    sql_text = "select distinct tr.loserid, 0 as wins, p.username, st.rounds from TournamentResults tr, Players p, SwissTournament st"
+    sql_text = "select distinct tr.loserid, p.username, 0 as wins, st.rounds from TournamentResults tr, Players p, SwissTournament st"
     sql_text += " where tr.loserid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id and "
     sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults)"
     cursor = db.cursor()
@@ -115,15 +144,24 @@ def playerStandings(db, tournament_id):
     lrows = cursor.fetchall()
     for row in lrows:
         rows.append(row)
+    if len(rows) == 0:
+        sql_text="select id, username, 0 as wins, 0 as rounds from Players"
+        cursor = db.cursor()
+        cursor.execute(sql_text)
+        prows = cursor.fetchall()
+        for row in prows:
+            rows.append(row)
     return rows
 
-def reportMatch(winner, loser, tournamentid, current_round, db):
+def reportMatch(winner, loser, tournamentid, current_round, db=None):
     """Records the outcome of a single match between two players.
 
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    if not db:
+        db = connect()
     sql_text = "insert into TournamentResults(tournamentId,round,winnerId,loserId) values("
     sql_text += str(tournamentid) +"," + str(current_round) + "," + str(winner) + "," + str(loser) + ")"
     cursor = db.cursor()
@@ -131,7 +169,7 @@ def reportMatch(winner, loser, tournamentid, current_round, db):
     db.commit()
 
  
-def swissPairings(db):
+def swissPairings(db=None):
     """Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
@@ -147,6 +185,8 @@ def swissPairings(db):
         name2: the second player's name
     """
     #sql_text="select winnerid, count(*) as wins from TournamentResults group by winnerid order by wins"
+    if not db:
+        db = connect()
     sql_text = "select tr.winnerid, count(*) as wins, p.username  from TournamentResults tr, Players p where tr.winnerid=p.id"
     sql_text += " group by tr.winnerid, p.username order by wins desc"
     cursor = db.cursor()
@@ -159,17 +199,13 @@ def swissPairings(db):
         count +=1
         if count % 2 != 0:
             pairinglist = []
-            playerlist = []
-            playerlist.append(row[0])
-            playerlist.append(row[2])
-            pairinglist.append(playerlist)
+            pairinglist.append(row[0])
+            pairinglist.append(row[2])
             swisspairing.append(pairinglist)
         else:
             pairinglist = swisspairing[pairing]
-            playerlist = []
-            playerlist.append(row[0])
-            playerlist.append(row[2])
-            pairinglist.append(playerlist)
+            pairinglist.append(row[0])
+            pairinglist.append(row[2])
             pairing += 1
 
     sql_text = "select distinct tr.loserid,p.username from TournamentResults tr, Players p where tr.loserid=p.id and "
@@ -181,17 +217,13 @@ def swissPairings(db):
         count +=1
         if count % 2 != 0:
             pairinglist = []
-            playerlist = []
-            playerlist.append(row[0])
-            playerlist.append(row[1])
-            pairinglist.append(playerlist)
+            pairinglist.append(row[0])
+            pairinglist.append(row[1])
             swisspairing.append(pairinglist)
         else:
             pairinglist = swisspairing[pairing]
-            playerlist = []
-            playerlist.append(row[0])
-            playerlist.append(row[1])
-            pairinglist.append(playerlist)
+            pairinglist.append(row[0])
+            pairinglist.append(row[1])
             pairing += 1
 
     return swisspairing
