@@ -92,6 +92,11 @@ class SwissTournament(object):
                     pairing += 1
 
     def start_tournament(self, tournament_name):
+        """
+        This method is to start a new tournament.
+        :param tournament_name:
+        :return:
+        """
 
         self.load_players_from_db()
         tournament.registerSwissTournament(tournament_name, self.database)
@@ -109,8 +114,9 @@ class SwissTournament(object):
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                              tournament_id)
-        self.swisspairing = tournament.swissPairings(tournament_id, self.database,
-                                                        past_matches)
+        self.swisspairing = tournament.swissPairings(tournament_id,
+                                                    self.database,
+                                                    past_matches)
         self.play_round(tournament_id, 2)
         tournament.updateSwissTournamentRound(tournament_id, 2, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
@@ -118,8 +124,9 @@ class SwissTournament(object):
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
-        self.swisspairing = tournament.swissPairings(tournament_id, self.database,
-                                                        past_matches)
+        self.swisspairing = tournament.swissPairings(tournament_id,
+                                                     self.database,
+                                                    past_matches)
         self.play_round(tournament_id, 3, past_matches)
         tournament.updateSwissTournamentRound(tournament_id, 3, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
@@ -127,8 +134,9 @@ class SwissTournament(object):
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
-        self.swisspairing = tournament.swissPairings(tournament_id, self.database,
-                                                        past_matches)
+        self.swisspairing = tournament.swissPairings(tournament_id,
+                                                     self.database,
+                                                    past_matches)
         self.play_round(tournament_id, 4, past_matches)
         tournament.updateSwissTournamentRound(tournament_id, 4, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
@@ -188,7 +196,7 @@ def main():
     myswiss.load_players_from_file("players.txt")
     myswiss.number_of_players()
     myswiss.start_tournament("Tournament #1")
-    myswiss.start_tournament("Tournament #2d")
+    myswiss.start_tournament("Tournament #2")
 
 if __name__ == "__main__":
     main()
