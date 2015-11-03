@@ -187,7 +187,7 @@ def playerStandings(tournament_id, db=None):
     """
     sql_text = "select distinct tr.loserid, p.username, 0 as wins, st.rounds from TournamentResults tr, Players p, SwissTournament st"
     sql_text += " where tr.loserid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id and "
-    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults)"
+    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid=" + str(tournament_id) + ")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     lrows = cursor.fetchall()
@@ -232,7 +232,7 @@ def addPlayerForPairng(wins,player):
         list = wins[player[1]]
         list.append(player)
 
-def getWinningPlayersSwissPairing(db, wins):
+def getWinningPlayersSwissPairing(tournament_id, db, wins):
     """
     This gets the posible pairings for players with winning
     record.
@@ -240,7 +240,8 @@ def getWinningPlayersSwissPairing(db, wins):
     :param wins:
     :return:
     """
-    sql_text = "select tr.winnerid, count(*) as wins, p.username  from TournamentResults tr, Players p where tr.winnerid=p.id"
+    sql_text = "select tr.winnerid, count(*) as wins, p.username  from TournamentResults tr, Players p where"
+    sql_text += " tr.tournamentid=" + str(tournament_id) + " and tr.winnerid=p.id"
     sql_text += " group by tr.winnerid, p.username order by wins desc"
     cursor = db.cursor()
     cursor.execute(sql_text)
@@ -248,7 +249,7 @@ def getWinningPlayersSwissPairing(db, wins):
     for row in rows:
         addPlayerForPairng(wins,row)
 
-def getNoWinsPlayersSwissPairing(db,wins):
+def getNoWinsPlayersSwissPairing(tournament_id, db, wins):
     """
     This gets the possible pairings for players
      with no wins.
@@ -256,15 +257,16 @@ def getNoWinsPlayersSwissPairing(db,wins):
     :param wins:
     :return:
     """
-    sql_text = "select distinct tr.loserid, 0 as wins, p.username from TournamentResults tr, Players p where tr.loserid=p.id and "
-    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults)"
+    sql_text = "select distinct tr.loserid, 0 as wins, p.username from TournamentResults tr, Players p where"
+    sql_text += " tr.tournamentid=" + str(tournament_id) + " and tr.loserid=p.id and "
+    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid=" + str(tournament_id) +")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
         addPlayerForPairng(wins,row)
 
-def swissPairings(db=None,pastMatches=None):
+def swissPairings(tournament_id, db=None,pastMatches=None):
     """Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
@@ -284,8 +286,8 @@ def swissPairings(db=None,pastMatches=None):
         db = connect()
 
     wins = dict()
-    getWinningPlayersSwissPairing(db, wins)
-    getNoWinsPlayersSwissPairing(db,wins)
+    getWinningPlayersSwissPairing(tournament_id, db, wins)
+    getNoWinsPlayersSwissPairing(tournament_id, db, wins)
     if pastMatches:
         for win in wins:
             nomatch = NoMatch.NoRematch(wins,win,pastMatches)
