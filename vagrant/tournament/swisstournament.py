@@ -73,7 +73,23 @@ class SwissTournament(object):
                     pairinglist.append(player[1])
                     pairing += 1
 
-    def play_round(self, tournament_id,current_round):
+    def have_played_before(self, id1, id2, past_matches):
+        """
+        This just checks if players have played before.
+        Really just a check to see if my logic is working.
+        :param id1:
+        :param id2:
+        :param past_matches:
+        :return:
+        """
+        for match in past_matches:
+            if id1 == match[0] and id2 == match[1]:
+                return True
+            if id1 == match[1] and id2 == match[0]:
+                return True
+        return False
+
+    def play_round(self, tournament_id,current_round, past_matches=None):
         """
         This will play a given round in a tournament and report the match to the database.
         :param tournament_id:
@@ -83,6 +99,10 @@ class SwissTournament(object):
 
         for pairings in self.swisspairing:
             if len(pairings) == 4:
+                if past_matches:
+                    if self.have_played_before(pairings[0], pairings[2], past_matches):
+                        print "This pairing has played before pairings1=" + str(pairings[0]) \
+                              + " pairings2=" + str(pairings[2])
                 aval = randint(0,9)
                 bval = randint(0,9)
                 if aval > bval:
@@ -108,7 +128,7 @@ def main():
     :return:
     """
     myswiss = SwissTournament(False)
-    tournament.deleteMatches(myswiss.db,1)
+    tournament.deleteMatches(myswiss.db)
     tournament.deleteSwissTournaments(myswiss.db)
     myswiss.load_players_from_file("players.txt")
     myswiss.number_of_players()
@@ -124,20 +144,23 @@ def main():
     results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,1)
 
-    myswiss.swisspairing = tournament.swissPairings(myswiss.db)
+    past_matches = tournament.getPastMatchesForTournament(myswiss.db,tournament_id)
+    myswiss.swisspairing = tournament.swissPairings(myswiss.db,past_matches)
     myswiss.play_round(tournament_id,2)
     tournament.updateSwissTournamentRound(tournament_id,2,myswiss.db)
     results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,2)
 
-    myswiss.swisspairing = tournament.swissPairings(myswiss.db)
-    myswiss.play_round(tournament_id,3)
+    past_matches = tournament.getPastMatchesForTournament(myswiss.db,tournament_id)
+    myswiss.swisspairing = tournament.swissPairings(myswiss.db,past_matches)
+    myswiss.play_round(tournament_id,3,past_matches)
+    tournament.updateSwissTournamentRound(tournament_id,3,myswiss.db)
     results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,3)
 
-    tournament.updateSwissTournamentRound(tournament_id,3,myswiss.db)
-    myswiss.swisspairing = tournament.swissPairings(myswiss.db)
-    myswiss.play_round(tournament_id,4)
+    past_matches = tournament.getPastMatchesForTournament(myswiss.db,tournament_id)
+    myswiss.swisspairing = tournament.swissPairings(myswiss.db,past_matches)
+    myswiss.play_round(tournament_id,4,past_matches)
     tournament.updateSwissTournamentRound(tournament_id,4,myswiss.db)
     results= tournament.playerStandings(tournament_id,myswiss.db)
     printStandings(results,4)
