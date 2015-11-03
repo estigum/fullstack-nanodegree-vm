@@ -120,7 +120,7 @@ def testPairings():
     reportMatch(id1, id2,tournament_id,1)
     reportMatch(id3, id4,tournament_id,1)
     updateSwissTournamentRound(tournament_id,1)
-    pairings = swissPairings()
+    pairings = swissPairings(tournament_id)
     if len(pairings) != 2:
         raise ValueError(
             "For four players, swissPairings should return two pairs.")
