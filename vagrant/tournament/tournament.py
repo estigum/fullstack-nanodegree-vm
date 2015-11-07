@@ -172,27 +172,10 @@ def playerStandings(tournament_id, db=None):
     if not db:
         db = connect()
 
-    """
-    This gets all the ones that have a winning record.
-    """
-    sql_text = "select tr.winnerid, p.username, count(*) as wins, st.rounds  from TournamentResults tr, Players p, SwissTournament st"
-    sql_text += " where tr.winnerid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id"
-    sql_text += " group by tr.winnerid, p.username, st.rounds order by wins desc"
+    sql_text = "select * from get_player_standings(" + str(tournament_id) + ")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
-
-    """
-    This gets all the ones that have not one yet.
-    """
-    sql_text = "select distinct tr.loserid, p.username, 0 as wins, st.rounds from TournamentResults tr, Players p, SwissTournament st"
-    sql_text += " where tr.loserid=p.id and st.id=" + str(tournament_id) + " and tr.tournamentid=st.id and "
-    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid=" + str(tournament_id) + ")"
-    cursor = db.cursor()
-    cursor.execute(sql_text)
-    lrows = cursor.fetchall()
-    for row in lrows:
-        rows.append(row)
 
     """
     At the start of the tournament we won't have any records in this table.
