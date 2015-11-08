@@ -200,8 +200,8 @@ def reportMatch(winner, loser, tournamentid, current_round, db=None):
     """
     if not db:
         db = connect()
-    sql_text = "insert into TournamentResults(tournamentId,round,winnerId,loserId) values("
-    sql_text += str(tournamentid) +"," + str(current_round) + "," + str(winner) + "," + str(loser) + ")"
+
+    sql_text = "select report_match(" + str(tournamentid) +"," + str(current_round) + "," + str(winner) + "," + str(loser) + ")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()

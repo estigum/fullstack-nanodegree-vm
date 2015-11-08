@@ -43,6 +43,16 @@ CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;
 
+DROP FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int);
+CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int) returns void
+    AS $$
+    BEGIN
+        insert into TournamentResults(tournamentId,round,winnerId,loserId) values(_tournamentid,_round,_winner,_loser);
+    END;
+    $$ LANGUAGE PLPGSQL VOLATILE
+    COST 100;
+
+
 DROP FUNCTION get_player_standings(tourId int);
 CREATE or REPLACE FUNCTION get_player_standings(tourId int)
    RETURNS TABLE (userid int,
