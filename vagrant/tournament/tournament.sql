@@ -25,11 +25,20 @@ round int,
 winnerId int,
 loserId int);
 
-DROP FUNCTION add_player(playername varchar);
+DROP FUNCTION add_player(_pname varchar);
 CREATE FUNCTION add_player(_pname varchar) returns void
     AS $$
     BEGIN
         insert into Players(username) values(_pname);
+    END;
+    $$ LANGUAGE PLPGSQL VOLATILE
+    COST 100;
+
+DROP FUNCTION register_swiss_tournament(_name varchar);
+CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
+    AS $$
+    BEGIN
+        insert into SwissTournament(name,rounds) values(_name,0);
     END;
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;

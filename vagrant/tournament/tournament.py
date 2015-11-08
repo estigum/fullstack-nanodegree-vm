@@ -74,7 +74,7 @@ def registerSwissTournament(name, db=None):
     """
     if not db:
         db = connect()
-    sql_text="insert into SwissTournament(name,rounds) values('" + name +"',0)"
+    sql_text="select register_swiss_tournament('" + name +"')"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
