@@ -25,6 +25,15 @@ round int,
 winnerId int,
 loserId int);
 
+DROP FUNCTION add_player(playername varchar);
+CREATE FUNCTION add_player(_pname varchar) returns void
+    AS $$
+    BEGIN
+        insert into Players(username) values(_pname);
+    END;
+    $$ LANGUAGE PLPGSQL VOLATILE
+    COST 100;
+
 DROP FUNCTION get_player_standings(tourId int);
 CREATE or REPLACE FUNCTION get_player_standings(tourId int)
    RETURNS TABLE (userid int,

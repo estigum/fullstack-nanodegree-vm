@@ -151,7 +151,7 @@ def registerPlayer(name, db=None):
     """
     if not db:
         db = connect()
-    sql_text="insert into Players(username) values('" + name +"')"
+    sql_text="select add_player('" + name +"')"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -171,6 +171,7 @@ def playerStandings(tournament_id, db=None):
     """
     if not db:
         db = connect()
+
 
     sql_text = "select * from get_player_standings(" + str(tournament_id) + ")"
     cursor = db.cursor()
@@ -252,8 +253,6 @@ def swissPairings(tournament_id, db=None,pastMatches=None):
 
     wins = dict()
     getSwissPairings(tournament_id, db, wins)
-    #getWinningPlayersSwissPairing(tournament_id, db, wins)
-    #getNoWinsPlayersSwissPairing(tournament_id, db, wins)
     if pastMatches:
         for win in wins:
             nomatch = NoMatch.NoRematch(wins,win,pastMatches)
