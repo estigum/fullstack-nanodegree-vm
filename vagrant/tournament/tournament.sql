@@ -5,12 +5,15 @@
 --
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
+
+--This is the Players table that contains all the players in the tournaments
 DROP TABLE IF EXISTS Players;
 CREATE TABLE Players(
 id serial,
 username varchar(30),
 PRIMARY KEY(id));
 
+--The SwissTournament contains all the tournaments that are going on.
 DROP TABLE IF EXISTS SwissTournament;
 CREATE TABLE SwissTournament(
 id serial,
@@ -18,6 +21,7 @@ name varchar(30),
 rounds int,
 PRIMARY KEY(id));
 
+--TournamentResults contains the results for a specific tournament based on the tournamentid.
 DROP TABLE IF EXISTS TournamentResults;
 CREATE TABLE TournamentResults(
 tournamentId int,
@@ -25,6 +29,7 @@ round int,
 winnerId int,
 loserId int);
 
+--add_player.  This stored procedure will add a player
 DROP FUNCTION add_player(_pname varchar);
 CREATE FUNCTION add_player(_pname varchar) returns void
     AS $$
@@ -34,6 +39,7 @@ CREATE FUNCTION add_player(_pname varchar) returns void
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;
 
+--register_swiss_tournament. This will add another tournament
 DROP FUNCTION register_swiss_tournament(_name varchar);
 CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
     AS $$
@@ -43,6 +49,7 @@ CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;
 
+--report_match.  this will report a match that happened.
 DROP FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int);
 CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int) returns void
     AS $$
@@ -52,7 +59,7 @@ CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner 
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;
 
-
+--get_player_standings.  This will get the current standings.
 DROP FUNCTION get_player_standings(tourId int);
 CREATE or REPLACE FUNCTION get_player_standings(tourId int)
    RETURNS TABLE (userid int,
@@ -82,7 +89,7 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
     END;
     $$ LANGUAGE PLPGSQL;
 
-
+--get_swiss_pariings - This will get the pairings for the next round.
 DROP FUNCTION get_swiss_pairings(tourId int);
 CREATE or REPLACE FUNCTION get_swiss_pairings(tourId int)
    RETURNS TABLE (userid int,
