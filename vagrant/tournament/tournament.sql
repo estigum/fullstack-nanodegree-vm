@@ -25,7 +25,8 @@ round int,
 winnerId int,
 loserId int);
 
-   CREATE or REPLACE FUNCTION get_player_standings(tourId int)
+DROP FUNCTION get_player_standings(tourId int);
+CREATE or REPLACE FUNCTION get_player_standings(tourId int)
    RETURNS TABLE (userid int,
                   username varchar(30),
                   wins bigint,
@@ -50,5 +51,31 @@ loserId int);
                   where tr.loserid = p.id and st.id = tourId and tr.tournamentid = st.id and
                   tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid= tourId)
                   group by tr.loserid, p.username, st.rounds;
+    END;
+    $$ LANGUAGE PLPGSQL;
+
+
+DROP FUNCTION get_swiss_pairings(tourId int);
+CREATE or REPLACE FUNCTION get_swiss_pairings(tourId int)
+   RETURNS TABLE (userid int,
+                  wins bigint,
+                  username varchar(30))
+    AS  $$
+    BEGIN
+      RETURN QUERY select
+                   tr.winnerid as userid,
+                   count(*) as wins,
+                   p.username as username
+                   from TournamentResults tr, Players p where
+                   tr.tournamentid = tourId and tr.winnerid = p.id
+                   group by tr.winnerid, p.username order by wins desc;
+      RETURN QUERY select
+                   distinct tr.loserid,
+                   CAST(0 AS BIGINT) as wins,
+                   p.username
+                   from TournamentResults tr, Players p
+                   where tr.tournamentid = tourId and tr.loserid = p.id and
+                   tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid = tourId)
+                   group by tr.loserid, p.username;
     END;
     $$ LANGUAGE PLPGSQL;

@@ -111,7 +111,6 @@ class SwissTournament(object):
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 1)
 
-
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                              tournament_id)
         self.swisspairing = tournament.swissPairings(tournament_id,

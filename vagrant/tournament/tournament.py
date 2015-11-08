@@ -215,39 +215,21 @@ def addPlayerForPairng(wins,player):
         list = wins[player[1]]
         list.append(player)
 
-def getWinningPlayersSwissPairing(tournament_id, db, wins):
+def getSwissPairings(tournament_id, db, wins):
     """
-    This gets the posible pairings for players with winning
-    record.
+    This will call a stored procedure to get the swiss pairings
+    :param tournament_id:
     :param db:
     :param wins:
     :return:
     """
-    sql_text = "select tr.winnerid, count(*) as wins, p.username  from TournamentResults tr, Players p where"
-    sql_text += " tr.tournamentid=" + str(tournament_id) + " and tr.winnerid=p.id"
-    sql_text += " group by tr.winnerid, p.username order by wins desc"
+    sql_text = "select * from get_swiss_pairings(" + str(tournament_id) +")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
         addPlayerForPairng(wins,row)
 
-def getNoWinsPlayersSwissPairing(tournament_id, db, wins):
-    """
-    This gets the possible pairings for players
-     with no wins.
-    :param db:
-    :param wins:
-    :return:
-    """
-    sql_text = "select distinct tr.loserid, 0 as wins, p.username from TournamentResults tr, Players p where"
-    sql_text += " tr.tournamentid=" + str(tournament_id) + " and tr.loserid=p.id and "
-    sql_text += "tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid=" + str(tournament_id) +")"
-    cursor = db.cursor()
-    cursor.execute(sql_text)
-    rows = cursor.fetchall()
-    for row in rows:
-        addPlayerForPairng(wins,row)
 
 def swissPairings(tournament_id, db=None,pastMatches=None):
     """Returns a list of pairs of players for the next round of a match.
@@ -269,8 +251,9 @@ def swissPairings(tournament_id, db=None,pastMatches=None):
         db = connect()
 
     wins = dict()
-    getWinningPlayersSwissPairing(tournament_id, db, wins)
-    getNoWinsPlayersSwissPairing(tournament_id, db, wins)
+    getSwissPairings(tournament_id, db, wins)
+    #getWinningPlayersSwissPairing(tournament_id, db, wins)
+    #getNoWinsPlayersSwissPairing(tournament_id, db, wins)
     if pastMatches:
         for win in wins:
             nomatch = NoMatch.NoRematch(wins,win,pastMatches)
