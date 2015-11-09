@@ -10,6 +10,8 @@ h2{
 }
 body{
     font-family: Arial, Verdana, sans-serif;
+    background-color: rgb(200,200,200);
+    background-color: rgba(0,0,0,0.5);
 }
 table{
  border-collapse: collapse;
@@ -21,7 +23,7 @@ th{
  padding:15px;
  text-align: left;
  vertical-align: bottom;
- background-color: 6600CC;
+ background-color: #6600CC;
  color: white;
  font-weight: bold;
 }
@@ -29,7 +31,7 @@ td{
   height:10px;
   padding:15px;
   vertical-align: bottom;
- background-color: 6699CC;
+ background-color: #6699CC;
  color: black;
 }
 table, th, td{
