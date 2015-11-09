@@ -67,8 +67,13 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
                   wins bigint,
                   round int)
     AS $$
+    DECLARE
+      num_tournament int;
     BEGIN
-      RETURN QUERY select
+      select count(*) into num_tournament as num_tournament from SwissTournament;
+      num_tournament := num_tournament * 4;
+      IF tourId >0 THEN
+        RETURN QUERY select
                    tr.winnerid as userid,
                    p.username as username,
                    count(*) as wins,
@@ -76,8 +81,19 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
                    from TournamentResults tr, Players p, SwissTournament st
                    where tr.winnerid = p.id and st.id = tourId and tr.tournamentid = st.id
                    group by tr.winnerid, p.username, st.rounds order by wins desc;
+       ELSE
+        RETURN QUERY select
+                   tr.winnerid as userid,
+                   p.username as username,
+                   count(*) as wins,
+                   num_tournament as round
+                   from TournamentResults tr, Players p, SwissTournament st
+                   where tr.winnerid = p.id and tr.tournamentid = st.id
+                   group by tr.winnerid, p.username, st.rounds order by wins desc;
+      END IF;
 
-     RETURN QUERY select
+      IF tourId >0 THEN
+        RETURN QUERY select
                   distinct tr.loserid as userid,
                   p.username as username,
                   CAST(0 AS BIGINT) as wins,
@@ -86,6 +102,17 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
                   where tr.loserid = p.id and st.id = tourId and tr.tournamentid = st.id and
                   tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid= tourId)
                   group by tr.loserid, p.username, st.rounds;
+      ELSE
+        RETURN QUERY select
+                  distinct tr.loserid as userid,
+                  p.username as username,
+                  CAST(0 AS BIGINT) as wins,
+                  num_tournament as round
+                  from TournamentResults tr, Players p, SwissTournament st
+                  where tr.loserid = p.id and  tr.tournamentid = st.id and
+                  tr.loserid not in(select distinct winnerid from TournamentResults)
+                  group by tr.loserid, p.username, st.rounds;
+      END IF;
     END;
     $$ LANGUAGE PLPGSQL;
 

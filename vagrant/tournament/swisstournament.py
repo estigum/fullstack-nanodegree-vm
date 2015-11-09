@@ -97,6 +97,18 @@ class SwissTournament(object):
                     pairinglist.append(player[1])
                     pairing += 1
 
+    def overall_tournament_results(self):
+
+        html_file = create_html_page("Overall Tournament Results")
+
+        results = tournament.playerStandings(0, self.database)
+        print_html_standings(html_file,results,0)
+
+        html_file.write("</div>\n</body>\n</html>\n")
+        html_file.close()
+        url = os.path.abspath(html_file.name)
+        webbrowser.open('file://' + url, new=2) # open in a new tab, if possible
+
     def start_tournament(self, tournament_name):
         """
         This method is to start a new tournament.
@@ -199,9 +211,14 @@ def create_html_page(tournament_name):
 def print_html_standings(html_file, results, current_round):
 
     #html_file.write("<h2>Round: " + str(current_round) + "</h2>\n")
-    html_file.write("<table>\n")
-    html_file.write("<tr>\n<th class=\"title\" colspan=\"4\">Round #" + str(current_round) + "</th>\n</tr>\n")
-    html_file.write("<tr>\n<th>ID</th>\n<th>NAME</th>\n<th>WINS</th>\n<th>ROUNDS</th>\n</tr>\n")
+    if current_round > 0:
+        html_file.write("<table>\n")
+        html_file.write("<tr>\n<th class=\"title\" colspan=\"4\">Round #" + str(current_round) + "</th>\n</tr>\n")
+        html_file.write("<tr>\n<th>ID</th>\n<th>NAME</th>\n<th>WINS</th>\n<th>ROUNDS</th>\n</tr>\n")
+    else:
+        html_file.write("<table class=\"overall\">\n")
+        html_file.write("<tr>\n<th class=\"title\" colspan=\"4\">Overall" + "</th>\n</tr>\n")
+        html_file.write("<tr>\n<th class=\"overall\">ID</th>\n<th class=\"overall\">NAME</th>\n<th class=\"overall\">WINS</th>\n<th class=\"overall\">ROUNDS</th>\n</tr>\n")
     for result in results:
         html_file.write("<tr>\n")
         html_file.write("<td>" + str(result[0]) + "</td>\n")
@@ -252,6 +269,6 @@ def main():
     temp = tournaments.split(",")
     for next_tournament in temp:
         myswiss.start_tournament(next_tournament)
-
+    myswiss.overall_tournament_results()
 if __name__ == "__main__":
     main()

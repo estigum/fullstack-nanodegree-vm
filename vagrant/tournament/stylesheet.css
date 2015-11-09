@@ -14,32 +14,43 @@ body{
     background-color: rgba(0,0,0,0.5);
 }
 table{
- border-collapse: collapse;
- float: left;
- display: inline-block;
+    border-collapse: collapse;
+    float: left;
+    display: inline-block;
+}
+table.overall{
+    border-collapse: collapse;
+    float: center;
+    display: inline-block;
 }
 th{
- height: 10px;
- padding:10px;
- text-align: left;
- vertical-align: bottom;
- background-color: #6600CC;
- color: white;
- font-weight: bold;
+    text-align: left;
+    vertical-align: bottom;
+    background-color: #6600CC;
+    color: white;
+    font-weight: bold;
+    padding:12px;
+    height: 10px;
 }
 td{
-  height:10px;
-  padding:10px;
-  vertical-align: bottom;
- background-color: #6699CC;
- color: black;
+    vertical-align: bottom;
+    background-color: #6699CC;
+    color: black;
+    padding:12px;
+    height: 10px;
 }
 table, th, td{
-  font-size: 12x;
-  border: 1px solid black;
+    font-size: 16x;
+    border: 1px solid black;
 }
 th.title{
     text-align: center;
+}
+th.overall{
+    text-align: center;
+    width:300px;
+    text-align: left;
+    vertical-align: bottom;
 }
 td.name{
     font-weight:bold;
