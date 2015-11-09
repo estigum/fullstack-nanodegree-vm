@@ -4,7 +4,8 @@ It has a main class for running tournaments
 """
 from random import randint
 import tournament
-
+import webbrowser
+import os
 def have_played_before(id1, id2, past_matches):
     """
     This just checks if players have played before.
@@ -97,6 +98,7 @@ class SwissTournament(object):
         :param tournament_name:
         :return:
         """
+        html_file = create_html_page(tournament_name)
 
         self.load_players_from_db()
         tournament.registerSwissTournament(tournament_name, self.database)
@@ -110,6 +112,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 1, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 1)
+        print_html_standings(html_file,results,1)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                              tournament_id)
@@ -120,6 +123,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 2, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 2)
+        print_html_standings(html_file,results,2)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
@@ -130,6 +134,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 3, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 3)
+        print_html_standings(html_file,results,3)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
@@ -140,6 +145,12 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 4, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 4)
+        print_html_standings(html_file,results,4)
+
+        html_file.write("</body>\n</html>\n")
+        html_file.close()
+        url = os.path.abspath(html_file.name)
+        webbrowser.open('file://' + url, new=2) # open in a new tab, if possible
 
     def play_round(self, tournament_id, current_round, past_matches=None):
         """
@@ -169,6 +180,29 @@ class SwissTournament(object):
                                            tournament_id, current_round,
                                            self.database)
 
+def create_html_page(tournament_name):
+
+    filename = tournament_name + ".html";
+    filename = filename.replace(' ', '')
+    html_file = open(filename,"w")
+    html_file.write("<!HTML>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
+    html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"")
+    html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n")
+    return html_file
+
+def print_html_standings(html_file, results, current_round):
+
+    html_file.write("<h2>Round: " + str(current_round) + "</h2>\n")
+    html_file.write("<table>\n")
+    html_file.write("<tr>\n<th>ID</th>\n<th>NAME</th>\n<th>WINS</th>\n<th>ROUNDS</th>\n</tr>\n")
+    for result in results:
+        html_file.write("<tr>\n")
+        html_file.write("<td>" + str(result[0]) + "</td>\n")
+        html_file.write("<td>" + str(result[1]) + "</td>\n")
+        html_file.write("<td>" + str(result[2]) + "</td>\n")
+        html_file.write("<td>" + str(result[3]) + "</td>\n")
+        html_file.write("</tr>\n")
+    html_file.write("</table>\n")
 
 def print_standings(results, current_round):
     """
@@ -194,8 +228,8 @@ def main():
     tournament.deleteSwissTournaments(myswiss.database)
     myswiss.load_players_from_file("players.txt")
     myswiss.number_of_players()
-    myswiss.start_tournament("Tournament #1")
-    myswiss.start_tournament("Tournament #2")
+    myswiss.start_tournament("Tournament One")
+    myswiss.start_tournament("Tournament Two")
 
 if __name__ == "__main__":
     main()
