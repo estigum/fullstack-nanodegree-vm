@@ -185,7 +185,7 @@ def create_html_page(tournament_name):
     filename = tournament_name + ".html";
     filename = filename.replace(' ', '')
     html_file = open(filename,"w")
-    html_file.write("<!HTML>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
+    html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
     html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"")
     html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n")
     return html_file
