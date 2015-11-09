@@ -147,7 +147,7 @@ class SwissTournament(object):
         print_standings(results, 4)
         print_html_standings(html_file,results,4)
 
-        html_file.write("</body>\n</html>\n")
+        html_file.write("</div>\n</body>\n</html>\n")
         html_file.close()
         url = os.path.abspath(html_file.name)
         webbrowser.open('file://' + url, new=2) # open in a new tab, if possible
@@ -187,13 +187,14 @@ def create_html_page(tournament_name):
     html_file = open(filename,"w")
     html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
     html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"")
-    html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n")
+    html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n<div>\n")
     return html_file
 
 def print_html_standings(html_file, results, current_round):
 
-    html_file.write("<h2>Round: " + str(current_round) + "</h2>\n")
+    #html_file.write("<h2>Round: " + str(current_round) + "</h2>\n")
     html_file.write("<table>\n")
+    html_file.write("<tr>\n<th class=\"title\" colspan=\"4\">Round #" + str(current_round) + "</th>\n</tr>\n")
     html_file.write("<tr>\n<th>ID</th>\n<th>NAME</th>\n<th>WINS</th>\n<th>ROUNDS</th>\n</tr>\n")
     for result in results:
         html_file.write("<tr>\n")
