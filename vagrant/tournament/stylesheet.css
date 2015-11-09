@@ -20,7 +20,7 @@ table{
 }
 th{
  height: 10px;
- padding:15px;
+ padding:10px;
  text-align: left;
  vertical-align: bottom;
  background-color: #6600CC;
@@ -29,15 +29,19 @@ th{
 }
 td{
   height:10px;
-  padding:15px;
+  padding:10px;
   vertical-align: bottom;
  background-color: #6699CC;
  color: black;
 }
 table, th, td{
-  font-size: 160x;
+  font-size: 12x;
   border: 1px solid black;
 }
 th.title{
-text-align: center;
+    text-align: center;
+}
+td.name{
+    font-weight:bold;
+    font-style:italic;
 }

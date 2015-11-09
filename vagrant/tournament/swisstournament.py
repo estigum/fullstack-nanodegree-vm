@@ -6,6 +6,7 @@ from random import randint
 import tournament
 import webbrowser
 import os
+
 def have_played_before(id1, id2, past_matches):
     """
     This just checks if players have played before.
@@ -199,7 +200,7 @@ def print_html_standings(html_file, results, current_round):
     for result in results:
         html_file.write("<tr>\n")
         html_file.write("<td>" + str(result[0]) + "</td>\n")
-        html_file.write("<td>" + str(result[1]) + "</td>\n")
+        html_file.write("<td class=\"name\">" + str(result[1]) + "</td>\n")
         html_file.write("<td>" + str(result[2]) + "</td>\n")
         html_file.write("<td>" + str(result[3]) + "</td>\n")
         html_file.write("</tr>\n")
