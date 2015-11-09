@@ -6,6 +6,9 @@ from random import randint
 import tournament
 import webbrowser
 import os
+import ConfigParser
+import sys
+import swisslogger
 
 def have_played_before(id1, id2, past_matches):
     """
@@ -29,7 +32,7 @@ class SwissTournament(object):
     It will run one or more tournament
     """
 
-    def __init__(self, supportodd):
+    def __init__(self, supportodd, logger):
         """
         This is the constructor.  It takes one parameter if
         we will support odd lists
@@ -41,6 +44,7 @@ class SwissTournament(object):
         self.numplayers = None
         self.supportodd = supportodd
         self.database = tournament.connect()
+        self.logger = logger
 
     def load_players_from_file(self, filename):
         """
@@ -107,12 +111,12 @@ class SwissTournament(object):
                                                         self.database)
 
         results = tournament.playerStandings(tournament_id, self.database)
-        print_standings(results, 1)
+        print_standings(results, 1, self.logger)
 
         self.play_round(tournament_id, 1)
         tournament.updateSwissTournamentRound(tournament_id, 1, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
-        print_standings(results, 1)
+        print_standings(results, 1, self.logger)
         print_html_standings(html_file,results,1)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
@@ -123,7 +127,7 @@ class SwissTournament(object):
         self.play_round(tournament_id, 2)
         tournament.updateSwissTournamentRound(tournament_id, 2, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
-        print_standings(results, 2)
+        print_standings(results, 2, self.logger)
         print_html_standings(html_file,results,2)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
@@ -134,7 +138,7 @@ class SwissTournament(object):
         self.play_round(tournament_id, 3, past_matches)
         tournament.updateSwissTournamentRound(tournament_id, 3, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
-        print_standings(results, 3)
+        print_standings(results, 3, self.logger)
         print_html_standings(html_file,results,3)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
@@ -145,7 +149,7 @@ class SwissTournament(object):
         self.play_round(tournament_id, 4, past_matches)
         tournament.updateSwissTournamentRound(tournament_id, 4, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
-        print_standings(results, 4)
+        print_standings(results, 4, self.logger)
         print_html_standings(html_file,results,4)
 
         html_file.write("</div>\n</body>\n</html>\n")
@@ -167,9 +171,9 @@ class SwissTournament(object):
                 if past_matches:
                     if have_played_before(pairings[0], pairings[2],
                                           past_matches):
-                        print "This pairing has played before pairings1=" \
+                        self.logger.warning("This pairing has played before pairings1=" \
                               + str(pairings[0]) \
-                              + " pairings2=" + str(pairings[2])
+                              + " pairings2=" + str(pairings[2]))
                 aval = randint(0, 9)
                 bval = randint(0, 9)
                 if aval > bval:
@@ -187,7 +191,8 @@ def create_html_page(tournament_name):
     filename = filename.replace(' ', '')
     html_file = open(filename,"w")
     html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
-    html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"")
+    html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"/>\n")
+    html_file.write("<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\n")
     html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n<div>\n")
     return html_file
 
@@ -206,7 +211,7 @@ def print_html_standings(html_file, results, current_round):
         html_file.write("</tr>\n")
     html_file.write("</table>\n")
 
-def print_standings(results, current_round):
+def print_standings(results, current_round, logger):
     """
     This will print the results for a given round
     based on the results passed in.
@@ -214,24 +219,39 @@ def print_standings(results, current_round):
     :param round:
     :return:
     """
-    print "Results for Round " + str(current_round)
-    print "%5s %-20s %10s %10s" % ("id", "Name", "Wins", "Rounds")
+    logger.info("Results for Round " + str(current_round))
+    logger.info("%5s %-20s %10s %10s" % ("id", "Name", "Wins", "Rounds"))
     for result in results:
-        print "%5d %-20s %10d %10d" % (result[0], result[1],
-                                       result[2], result[3])
+        logger.info("%5d %-20s %10d %10d" % (result[0], result[1],
+                                       result[2], result[3]))
 
 def main():
     """
     This is the main function that sets up the tournament
     :return:
     """
-    myswiss = SwissTournament(False)
+
+
+    if len(sys.argv) < 2:
+        print "python swisstournament <configfile>"
+        return
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read(sys.argv[1])
+    logger = swisslogger.get_logger()
+    swisslogger.set_logger_mode(logger, config_parser.get("logging", "mode"))
+
+    myswiss = SwissTournament(False,logger)
     tournament.deleteMatches(myswiss.database)
     tournament.deleteSwissTournaments(myswiss.database)
-    myswiss.load_players_from_file("players.txt")
+
+    player_file_name = config_parser.get("run_mode", "player_file")
+    myswiss.load_players_from_file(player_file_name)
     myswiss.number_of_players()
-    myswiss.start_tournament("Tournament One")
-    myswiss.start_tournament("Tournament Two")
+
+    tournaments = config_parser.get("run_mode", "tournaments")
+    temp = tournaments.split(",")
+    for next_tournament in temp:
+        myswiss.start_tournament(next_tournament)
 
 if __name__ == "__main__":
     main()
