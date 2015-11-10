@@ -98,7 +98,7 @@ class SwissTournament(object):
                     pairinglist.append(player[1])
                     pairing += 1
 
-    def overall_tournament_results(self):
+    def overall_tournament_results(self, web_support):
 
         html_file = create_html_page("Overall Tournament Results")
 
@@ -108,7 +108,9 @@ class SwissTournament(object):
         html_file.write("</div>\n</body>\n</html>\n")
         html_file.close()
         url = os.path.abspath(html_file.name)
-        webbrowser.open('file://' + url, new=2) # open in a new tab, if possible
+
+        if web_support == "True":
+            webbrowser.open('file://' + url, new=2) # open in a new tab, if possible
 
     def start_tournament(self, tournament_name, web_support):
         """
@@ -296,8 +298,7 @@ def main():
         for next_tournament in temp:
             myswiss.start_tournament(next_tournament, web_support)
 
-        if web_support == "True":
-            myswiss.overall_tournament_results()
+        myswiss.overall_tournament_results(web_support)
         output_fd.close()
 
     except Exception, e:
