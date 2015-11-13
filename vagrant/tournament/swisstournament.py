@@ -99,11 +99,16 @@ class SwissTournament(object):
                     pairing += 1
 
     def overall_tournament_results(self, web_support):
-
+        """
+        This will create a web page for the overall
+        results
+        :param web_support:
+        :return:
+        """
         html_file = create_html_page("Overall Tournament Results")
 
         results = tournament.playerStandings(0, self.database)
-        print_html_standings(html_file,results,0)
+        print_html_standings(html_file, results, 0)
 
         html_file.write("</div>\n</body>\n</html>\n")
         html_file.close()
@@ -133,7 +138,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 1, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 1, self.output_fd)
-        print_html_standings(html_file,results,1)
+        print_html_standings(html_file, results, 1)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                              tournament_id)
@@ -144,7 +149,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 2, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 2, self.output_fd)
-        print_html_standings(html_file,results,2)
+        print_html_standings(html_file, results, 2)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
@@ -155,7 +160,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 3, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 3, self.output_fd)
-        print_html_standings(html_file,results,3)
+        print_html_standings(html_file, results, 3)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
                                                               tournament_id)
@@ -166,7 +171,7 @@ class SwissTournament(object):
         tournament.updateSwissTournamentRound(tournament_id, 4, self.database)
         results = tournament.playerStandings(tournament_id, self.database)
         print_standings(results, 4, self.output_fd)
-        print_html_standings(html_file,results,4)
+        print_html_standings(html_file, results, 4)
 
         html_file.write("</div>\n</body>\n</html>\n")
         html_file.close()
@@ -203,10 +208,15 @@ class SwissTournament(object):
                                            self.database)
 
 def create_html_page(tournament_name):
+    """
+    This will create an HTML page
+    :param tournament_name:
+    :return html_file:
+    """
 
     filename = tournament_name + ".html";
     filename = filename.replace(' ', '')
-    html_file = open(filename,"w")
+    html_file = open(filename, "w")
     html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
     html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"/>\n")
     html_file.write("<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\n")
@@ -214,6 +224,14 @@ def create_html_page(tournament_name):
     return html_file
 
 def print_html_standings(html_file, results, current_round):
+    """
+    This will print the standings for a given Round to an
+    HTML file
+    :param html_file:
+    :param results:
+    :param current_round:
+    :return:
+    """
 
     #html_file.write("<h2>Round: " + str(current_round) + "</h2>\n")
     if current_round > 0:
@@ -269,7 +287,7 @@ def main():
             raise Exception("No output_file in the run_mode section of the configuration file")
 
         output_file_name = config_parser.get("run_mode", "output_file")
-        output_fd = open(output_file_name,"w")
+        output_fd = open(output_file_name, "w")
 
         if not config_parser.has_option("run_mode", "web_support"):
             web_support = "False"
@@ -277,7 +295,7 @@ def main():
             web_support = config_parser.get("run_mode", "web_support")
         print web_support
 
-        myswiss = SwissTournament(False,logger, output_fd)
+        myswiss = SwissTournament(False, logger, output_fd)
         tournament.deleteMatches(myswiss.database)
         tournament.deleteSwissTournaments(myswiss.database)
 
@@ -290,7 +308,7 @@ def main():
 
 
         if not config_parser.has_option("run_mode", "tournaments"):
-           raise Exception("No tournaments specified in run_mode section of configuration file")
+            raise Exception("No tournaments specified in run_mode section of configuration file")
 
         tournaments = config_parser.get("run_mode", "tournaments")
 

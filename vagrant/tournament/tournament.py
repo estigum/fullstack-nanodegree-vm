@@ -32,7 +32,7 @@ def deletePlayers(db=None):
 
     if not db:
         db = connect()
-    sql_text="delete from Players"
+    sql_text = "delete from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -43,7 +43,7 @@ def countPlayers(db=None):
 
     if not db:
         db = connect()
-    sql_text="select count(*) from Players"
+    sql_text = "select count(*) from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
@@ -58,7 +58,7 @@ def getPlayers(db):
     :param db:
     :return list of players:
     """
-    sql_text="select * from Players"
+    sql_text = "select * from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
@@ -74,7 +74,7 @@ def registerSwissTournament(name, db=None):
     """
     if not db:
         db = connect()
-    sql_text="select register_swiss_tournament('" + name +"')"
+    sql_text = "select register_swiss_tournament('" + name +"')"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -88,7 +88,7 @@ def getPastMatchesForTournament(db, tournamentid):
     :param tournamentid:
     :return list of matchups:
     """
-    sql_text="select winnerid, loserid from TournamentResults where tournamentid=" + str(tournamentid)
+    sql_text = "select winnerid, loserid from TournamentResults where tournamentid=" + str(tournamentid)
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
@@ -104,7 +104,7 @@ def getSwissTournamentId(name, db=None):
     """
     if not db:
         db = connect()
-    sql_text="select id from SwissTournament where name='" + name +"'"
+    sql_text = "select id from SwissTournament where name='" + name +"'"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
@@ -112,7 +112,7 @@ def getSwissTournamentId(name, db=None):
         return row[0]
     return 0
 
-def updateSwissTournamentRound(tournament_id,round, db=None):
+def updateSwissTournamentRound(tournament_id, round, db=None):
     """
     Update the round the swiss tournament is in.
     :param tournament_id:
@@ -122,7 +122,8 @@ def updateSwissTournamentRound(tournament_id,round, db=None):
     """
     if not db:
         db = connect()
-    sql_text="Update SwissTournament set rounds=" + str(round) + " where id=" + str(tournament_id)
+    sql_text = "Update SwissTournament set rounds=" + str(round) \
+               + " where id=" + str(tournament_id)
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -135,7 +136,7 @@ def deleteSwissTournaments(db=None):
     """
     if not db:
         db = connect()
-    sql_text="delete from SwissTournament"
+    sql_text = "delete from SwissTournament"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -151,7 +152,7 @@ def registerPlayer(name, db=None):
     """
     if not db:
         db = connect()
-    sql_text="select add_player('" + name +"')"
+    sql_text = "select add_player('" + name +"')"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
@@ -183,7 +184,7 @@ def playerStandings(tournament_id, db=None):
     We still want the standings.
     """
     if len(rows) == 0:
-        sql_text="select id, username, 0 as wins, 0 as rounds from Players"
+        sql_text = "select id, username, 0 as wins, 0 as rounds from Players"
         cursor = db.cursor()
         cursor.execute(sql_text)
         prows = cursor.fetchall()
@@ -201,12 +202,20 @@ def reportMatch(winner, loser, tournamentid, current_round, db=None):
     if not db:
         db = connect()
 
-    sql_text = "select report_match(" + str(tournamentid) +"," + str(current_round) + "," + str(winner) + "," + str(loser) + ")"
+    sql_text = "select report_match(" + str(tournamentid) +"," + str(current_round) \
+               + "," + str(winner) + "," + str(loser) + ")"
+
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def addPlayerForPairng(wins,player):
+def addPlayerForPairng(wins, player):
+    """
+    This will add a player for pairing.
+    :param wins:
+    :param player:
+    :return:
+    """
 
     if player[1] not in wins:
         list = []
@@ -229,10 +238,10 @@ def getSwissPairings(tournament_id, db, wins):
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
-        addPlayerForPairng(wins,row)
+        addPlayerForPairng(wins, row)
 
 
-def swissPairings(tournament_id, db=None,pastMatches=None):
+def swissPairings(tournament_id, db=None, pastMatches=None):
     """Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
@@ -255,7 +264,7 @@ def swissPairings(tournament_id, db=None,pastMatches=None):
     getSwissPairings(tournament_id, db, wins)
     if pastMatches:
         for win in wins:
-            nomatch = NoMatch.NoRematch(wins,win,pastMatches)
+            nomatch = NoMatch.NoRematch(wins, win, pastMatches)
             nomatch.get_no_rematch()
     pairing = 0
     count = 0
@@ -263,7 +272,7 @@ def swissPairings(tournament_id, db=None,pastMatches=None):
     for win in wins:
         rows = wins[win]
         for row in rows:
-            count +=1
+            count += 1
             if count % 2 != 0:
                 pairinglist = []
                 pairinglist.append(row[0])
@@ -276,6 +285,4 @@ def swissPairings(tournament_id, db=None,pastMatches=None):
                 pairing += 1
 
     return swisspairing
-
-
 
