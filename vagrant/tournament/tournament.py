@@ -88,7 +88,7 @@ def getPastMatchesForTournament(db, tournamentid):
     :param tournamentid:
     :return list of matchups:
     """
-    sql_text = "select winnerid, loserid from TournamentResults where tournamentid=" + str(tournamentid)
+    sql_text = "select * from get_past_matches(" + str(tournamentid) +")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
@@ -122,8 +122,7 @@ def updateSwissTournamentRound(tournament_id, round, db=None):
     """
     if not db:
         db = connect()
-    sql_text = "Update SwissTournament set rounds=" + str(round) \
-               + " where id=" + str(tournament_id)
+    sql_text = "select update_tournament_round(" + str(round) + "," +  str(tournament_id) +")"
     cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()

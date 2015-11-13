@@ -29,6 +29,16 @@ round int,
 winnerId int,
 loserId int);
 
+--update_tournament_round. This stored procedure will update the current round for a tournament
+DROP FUNCTION update_tournament_round(_round int, _tournamentid int);
+CREATE FUNCTION update_tournament_round(_round int, _tournamentid int) returns void
+    AS $$
+    BEGIN
+      UPDATE SwissTournament set rounds=_round where id=_tournamentid;
+    END;
+    $$ LANGUAGE PLPGSQL VOLATILE
+    COST 100;
+
 --add_player.  This stored procedure will add a player
 DROP FUNCTION add_player(_pname varchar);
 CREATE FUNCTION add_player(_pname varchar) returns void
@@ -58,6 +68,20 @@ CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner 
     END;
     $$ LANGUAGE PLPGSQL VOLATILE
     COST 100;
+
+--get_past_matches - This will get past matches
+DROP FUNCTION get_past_matches(_tournamentid int);
+CREATE FUNCTION get_past_matches(_tournamentid int)
+    RETURNS TABLE (winnerid int,
+                   loserid int)
+    AS $$
+    BEGIN
+        RETURN QUERY select tr.winnerid as winnerid,
+                            tr.loserid as loserid
+                            from TournamentResults tr
+                            where tr.tournamentid=_tournamentid;
+    END;
+    $$ LANGUAGE PLPGSQL;
 
 --get_player_standings.  This will get the current standings.
 DROP FUNCTION get_player_standings(tourId int);
