@@ -147,6 +147,7 @@ class NoRematch(object):
         id_list = []
         ret_list = []
         match_list = self.wins[self.win]
+        matched = False
         while count <= max_val:
             next_id = get_next_good_match_id(count, id_list, good_match)
             id_list.append(next_id)
@@ -164,7 +165,11 @@ class NoRematch(object):
                             if tid not in bad_match and \
                                     not is_in_player_list(ret_list, tplayer):
                                 ret_list.append(tplayer)
+                                matched = True
                                 break
+                if matched:
+                    matched = False
+                    continue
                 tlist = good_match[next_id]
                 for tid in tlist:
                     tplayer = get_player(tid, match_list)
