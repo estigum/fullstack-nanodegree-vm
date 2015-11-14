@@ -79,7 +79,8 @@ CREATE FUNCTION get_past_matches(_tournamentid int)
         RETURN QUERY select tr.winnerid as winnerid,
                             tr.loserid as loserid
                             from TournamentResults tr
-                            where tr.tournamentid=_tournamentid;
+                            where tr.tournamentid=_tournamentid
+                            and tr.loserid != 0;
     END;
     $$ LANGUAGE PLPGSQL;
 
@@ -125,6 +126,7 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
                   from TournamentResults tr, Players p, SwissTournament st
                   where tr.loserid = p.id and st.id = tourId and tr.tournamentid = st.id and
                   tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid= tourId)
+                  and tr.loserid != -1
                   group by tr.loserid, p.username, st.rounds;
       ELSE
         RETURN QUERY select
@@ -135,6 +137,7 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
                   from TournamentResults tr, Players p, SwissTournament st
                   where tr.loserid = p.id and  tr.tournamentid = st.id and
                   tr.loserid not in(select distinct winnerid from TournamentResults)
+                  and tr.loserid != -1
                   group by tr.loserid, p.username, st.rounds;
       END IF;
     END;
@@ -162,6 +165,7 @@ CREATE or REPLACE FUNCTION get_swiss_pairings(tourId int)
                    from TournamentResults tr, Players p
                    where tr.tournamentid = tourId and tr.loserid = p.id and
                    tr.loserid not in(select distinct winnerid from TournamentResults where tournamentid = tourId)
+                   and tr.loserid != -1
                    group by tr.loserid, p.username;
     END;
     $$ LANGUAGE PLPGSQL;

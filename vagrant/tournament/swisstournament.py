@@ -81,8 +81,14 @@ class SwissTournament(object):
         del self.swisspairing[:]
 
         players = tournament.getPlayers(self.database)
+
         count = 0
         pairing = 0
+        odd_player = None
+        if self.numplayers % 2 != 0:
+            odd_index =  randint(0, len(players)-1)
+            odd_player = players[odd_index]
+            del players[odd_index]
         for player in players:
             if len(player) == 2:
                 count += 1
@@ -97,6 +103,14 @@ class SwissTournament(object):
                     pairinglist.append(player[0])
                     pairinglist.append(player[1])
                     pairing += 1
+        if odd_player:
+            pairinglist = []
+            pairinglist.append(odd_player[0])
+            pairinglist.append(odd_player[1])
+            pairinglist.append(-1)
+            pairinglist.append("Loser")
+            self.swisspairing.append(pairinglist)
+
 
     def overall_tournament_results(self, web_support):
         """
@@ -198,14 +212,19 @@ class SwissTournament(object):
                               + " pairings2=" + str(pairings[2]))
                 aval = randint(0, 9)
                 bval = randint(0, 9)
-                if aval > bval:
+                if pairings[2] == -1: #Odd Player
                     tournament.reportMatch(pairings[0], pairings[2],
                                            tournament_id, current_round,
                                            self.database)
                 else:
-                    tournament.reportMatch(pairings[2], pairings[0],
-                                           tournament_id, current_round,
-                                           self.database)
+                    if aval > bval:
+                        tournament.reportMatch(pairings[0], pairings[2],
+                                               tournament_id, current_round,
+                                               self.database)
+                    else:
+                        tournament.reportMatch(pairings[2], pairings[0],
+                                               tournament_id, current_round,
+                                               self.database)
 
 def create_html_page(tournament_name):
     """

@@ -3,6 +3,8 @@ This module is used to make sure we don't
 have any rematches if the user choses to enfore
 tht
 """
+from random import randint
+
 def have_played_before(id1, id2, past_matches):
     """
     This will see if two players have already matched up
@@ -109,7 +111,7 @@ class NoRematch(object):
         self.past_matches = past_matches
 
 
-    def get_good_had_match(self):
+    def get_good_had_match(self, match_list):
         """
         This will return the matches a given player has had
         and the ones that they have not yet had
@@ -117,7 +119,6 @@ class NoRematch(object):
         """
         had_match = dict()
         good_match = dict()
-        match_list = self.wins[self.win]
         for player in match_list:
             had_match[player[0]] = []
             good_match[player[0]] = []
@@ -140,13 +141,18 @@ class NoRematch(object):
         not rematches.
         :return Nothing:
         """
-        had_match, good_match = self.get_good_had_match()
+        match_list = self.wins[self.win]
+        odd_player = None
+        if len(match_list) % 2 != 0:
+            odd_index =  randint(0, len(match_list)-1)
+            odd_player = match_list[odd_index]
+            del match_list[odd_index]
+        had_match, good_match = self.get_good_had_match(match_list)
         min_val = get_min_good_match(good_match)
         max_val = get_max_good_match(good_match)
         count = min_val
         id_list = []
         ret_list = []
-        match_list = self.wins[self.win]
         matched = False
         while count <= max_val:
             next_id = get_next_good_match_id(count, id_list, good_match)
@@ -178,5 +184,10 @@ class NoRematch(object):
                         break
             else:
                 count += 1
+
+        if odd_player:
+            ret_list.append(odd_player)
+            loser = [-1,odd_player[1],"loser"]
+            ret_list.append(loser)
 
         self.wins[self.win] = ret_list
