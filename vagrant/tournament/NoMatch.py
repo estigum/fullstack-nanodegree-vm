@@ -144,7 +144,7 @@ class NoRematch(object):
         match_list = self.wins[self.win]
         odd_player = None
         if len(match_list) % 2 != 0:
-            odd_index =  randint(0, len(match_list)-1)
+            odd_index = randint(0, len(match_list)-1)
             odd_player = match_list[odd_index]
             del match_list[odd_index]
         had_match, good_match = self.get_good_had_match(match_list)
@@ -187,7 +187,7 @@ class NoRematch(object):
 
         if odd_player:
             ret_list.append(odd_player)
-            loser = [-1,odd_player[1],"loser"]
+            loser = [-1, odd_player[1], "loser"]
             ret_list.append(loser)
 
         self.wins[self.win] = ret_list

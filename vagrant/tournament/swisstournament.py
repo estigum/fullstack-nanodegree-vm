@@ -86,7 +86,7 @@ class SwissTournament(object):
         pairing = 0
         odd_player = None
         if self.numplayers % 2 != 0:
-            odd_index =  randint(0, len(players)-1)
+            odd_index = randint(0, len(players)-1)
             odd_player = players[odd_index]
             del players[odd_index]
         for player in players:
@@ -233,7 +233,7 @@ def create_html_page(tournament_name):
     :return html_file:
     """
 
-    filename = tournament_name + ".html";
+    filename = tournament_name + ".html"
     filename = filename.replace(' ', '')
     html_file = open(filename, "w")
     html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
@@ -338,8 +338,8 @@ def main():
         myswiss.overall_tournament_results(web_support)
         output_fd.close()
 
-    except Exception, e:
-        logger.error("Error: " + e.message)
+    except Exception, error:
+        logger.error("Error: " + error.message)
 
 if __name__ == "__main__":
     main()
