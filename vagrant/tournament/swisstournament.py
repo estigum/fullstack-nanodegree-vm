@@ -2,6 +2,12 @@
 This is the SwissTournament module
 It has a main class for running tournaments
 """
+__author__ = "Erik Stigum"
+__copyright__ = "Copyright 2015, Swiss Tournament"
+__email__ = "estigum@gmail.com"
+__version__ = "1.0"
+
+
 from random import randint
 import tournament
 import webbrowser
@@ -9,6 +15,8 @@ import os
 import ConfigParser
 import sys
 import swisslogger
+from tournamentexception import TournamentExeption
+
 
 def have_played_before(id1, id2, past_matches):
     """
@@ -53,13 +61,17 @@ class SwissTournament(object):
         :param filename:
         :return:
         """
-
         tournament.deletePlayers(self.database)
-        players = open(filename, "r")
-        for line in players:
-            player = line.strip('\n')
-            tournament.registerPlayer(player, self.database)
-        players.close()
+        try:
+            players = open(filename, "r")
+        except IOError, error:
+            raise IOError(error.message)
+        else:
+            for line in players:
+                player = line.strip('\n')
+                tournament.registerPlayer(player, self.database)
+        finally:
+            players.close()
 
     def number_of_players(self):
         """
@@ -67,7 +79,7 @@ class SwissTournament(object):
         :return:
         """
         players = tournament.countPlayers(self.database)
-        print "Number of players " + str(players)
+        self.logger.info("Number of players " + str(players))
         self.numplayers = players
 
     def load_players_from_db(self):
@@ -137,6 +149,7 @@ class SwissTournament(object):
         :param tournament_name:
         :return:
         """
+        self.logger.info("Starting New Tournament!!!  Tournament Name = " + tournament_name )
         self.output_fd.write("Starting New Tournament!!!  Tournament Name = " + tournament_name + "\n")
         html_file = create_html_page(tournament_name)
 
@@ -235,12 +248,16 @@ def create_html_page(tournament_name):
 
     filename = tournament_name + ".html"
     filename = filename.replace(' ', '')
-    html_file = open(filename, "w")
-    html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
-    html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"/>\n")
-    html_file.write("<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\n")
-    html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n<div>\n")
-    return html_file
+    try:
+        html_file = open(filename, "w")
+    except IOError, error:
+        raise IOError(error.message)
+    else:
+        html_file.write("<!DOCTYPE html>\n<html>\n<head>\n<title>" + tournament_name + "</title>\n</head>\n")
+        html_file.write("<link href=\"stylesheet.css\" type=\"text/css\" rel=\"stylesheet\"/>\n")
+        html_file.write("<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\n")
+        html_file.write("<body>\n<h1>" + tournament_name + "</h1>\n<div>\n")
+        return html_file
 
 def print_html_standings(html_file, results, current_round):
     """
@@ -291,55 +308,65 @@ def main():
     """
     try:
         if len(sys.argv) < 2:
-            print "python swisstournament <configfile>"
-            return
+            raise TournamentExeption("python swisstournament <configfile>")
+
         config_parser = ConfigParser.ConfigParser()
         config_parser.read(sys.argv[1])
         logger = swisslogger.get_logger()
 
         if not config_parser.has_option("logging", "mode"):
-            raise Exception("No mode setup for logging section in configuration file")
+            raise TournamentExeption("No mode setup for logging section in configuration file")
 
         swisslogger.set_logger_mode(logger, config_parser.get("logging", "mode"))
 
-        if not config_parser.has_option("run_mode", "output_file"):
-            raise Exception("No output_file in the run_mode section of the configuration file")
-
-        output_file_name = config_parser.get("run_mode", "output_file")
-        output_fd = open(output_file_name, "w")
+        logger.info("Welcome to Swiss Tournament Game")
 
         if not config_parser.has_option("run_mode", "web_support"):
             web_support = "False"
         else:
             web_support = config_parser.get("run_mode", "web_support")
-        print web_support
+        logger.info("Web Support:" + web_support)
 
-        myswiss = SwissTournament(False, logger, output_fd)
-        tournament.deleteMatches(myswiss.database)
-        tournament.deleteSwissTournaments(myswiss.database)
+        if not config_parser.has_option("run_mode", "output_file"):
+            raise TournamentExeption("No output_file in the run_mode section of the configuration file")
 
-        if not config_parser.has_option("run_mode", "player_file"):
-            raise Exception("No player_file specified in run_mode section of confguration file")
+        output_file_name = config_parser.get("run_mode", "output_file")
+        try:
+            output_fd = open(output_file_name, "w")
+        except IOError, error:
+            raise IOError(error)
+        else:
+            myswiss = SwissTournament(False, logger, output_fd)
+            tournament.deleteMatches(myswiss.database)
+            tournament.deleteSwissTournaments(myswiss.database)
 
-        player_file_name = config_parser.get("run_mode", "player_file")
-        myswiss.load_players_from_file(player_file_name)
-        myswiss.number_of_players()
+            if not config_parser.has_option("run_mode", "player_file"):
+                raise TournamentExeption("No player_file specified in run_mode section of confguration file")
+
+            player_file_name = config_parser.get("run_mode", "player_file")
+            myswiss.load_players_from_file(player_file_name)
+            myswiss.number_of_players()
 
 
-        if not config_parser.has_option("run_mode", "tournaments"):
-            raise Exception("No tournaments specified in run_mode section of configuration file")
+            if not config_parser.has_option("run_mode", "tournaments"):
+                raise TournamentExeption("No tournaments specified in run_mode section of configuration file")
 
-        tournaments = config_parser.get("run_mode", "tournaments")
+            tournaments = config_parser.get("run_mode", "tournaments")
 
-        temp = tournaments.split(",")
-        for next_tournament in temp:
-            myswiss.start_tournament(next_tournament, web_support)
+            temp = tournaments.split(",")
+            for next_tournament in temp:
+                myswiss.start_tournament(next_tournament, web_support)
 
-        myswiss.overall_tournament_results(web_support)
-        output_fd.close()
+            myswiss.overall_tournament_results(web_support)
+        finally:
+            output_fd.close()
 
+    except IOError, error:
+        logger.error("IO Error: " + error.message)
+    except TournamentExeption, error:
+        logger.error("Config Error: " + error.message)
     except Exception, error:
-        logger.error("Error: " + error.message)
+        logger.error("General Error: " + error.message)
 
 if __name__ == "__main__":
     main()

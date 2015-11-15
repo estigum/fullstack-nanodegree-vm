@@ -1,8 +1,13 @@
 """
 This module is used to make sure we don't
 have any rematches if the user choses to enfore
-tht
+that
 """
+__author__ = "Erik Stigum"
+__copyright__ = "Copyright 2015, Swiss Tournament"
+__email__ = "estigum@gmail.com"
+__version__ = "1.0"
+
 from random import randint
 
 def have_played_before(id1, id2, past_matches):

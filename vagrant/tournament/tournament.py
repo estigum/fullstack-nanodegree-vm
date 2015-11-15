@@ -1,7 +1,10 @@
-#!/usr/bin/env python
-# 
-# tournament.py -- implementation of a Swiss-system tournament
-#
+"""
+This module holds all the database calls that will be used by the swiss tournament
+"""
+__author__ = "Erik Stigum"
+__copyright__ = "Copyright 2015, Swiss Tournament"
+__email__ = "estigum@gmail.com"
+__version__ = "1.0"
 
 import psycopg2
 import NoMatch

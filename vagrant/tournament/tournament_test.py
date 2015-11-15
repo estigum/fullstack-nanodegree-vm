@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 #
 # Test cases for tournament.py
+__author__ = "Erik Stigum"
+__copyright__ = "Copyright 2015, Swiss Tournament"
+__email__ = "estigum@gmail.com"
+__version__ = "1.0"
 
 from tournament import *
 
