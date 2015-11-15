@@ -121,8 +121,8 @@ def testPairings():
     registerPlayer("Pinkie Pie")
     standings = playerStandings(tournament_id)
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(id1, id2,tournament_id,1)
-    reportMatch(id3, id4,tournament_id,1)
+    reportMatch(id1, id2,tournament_id)
+    reportMatch(id3, id4,tournament_id)
     updateSwissTournamentRound(tournament_id,1)
     pairings = swissPairings(tournament_id)
     if len(pairings) != 2:

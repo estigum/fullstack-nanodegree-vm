@@ -194,7 +194,7 @@ def playerStandings(tournament_id, db=None):
             rows.append(row)
     return rows
 
-def reportMatch(winner, loser, tournamentid, current_round, db=None):
+def reportMatch(winner, loser, tournamentid, current_round=1, db=None):
     """Records the outcome of a single match between two players.
 
     Args:
