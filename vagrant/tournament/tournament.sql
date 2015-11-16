@@ -7,6 +7,9 @@
 -- these lines here.
 
 --This is the Players table that contains all the players in the tournaments
+DROP DATABASE IF EXISTS tournament;
+CREATE DATABASE tournament;
+
 DROP TABLE IF EXISTS Players;
 CREATE TABLE Players(
 id serial,

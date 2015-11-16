@@ -15,7 +15,7 @@ APPLICATION SUPPORTS
 
 DATABASE
 tournament.sql - Includes tables to store the date and  stored procedures for retrieving data and
-saving data to the database.
+saving data to the database. PLEASE MAKE SURE TO LOAD THIS FIRST.
 
 TABLES
 1. Players - This has the list of players in the tournament
