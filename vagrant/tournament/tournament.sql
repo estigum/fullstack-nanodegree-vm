@@ -10,6 +10,8 @@
 DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
 
+\c tournament;
+
 DROP TABLE IF EXISTS Players;
 CREATE TABLE Players(
 id serial,
@@ -33,7 +35,7 @@ winnerId int,
 loserId int);
 
 --update_tournament_round. This stored procedure will update the current round for a tournament
-DROP FUNCTION update_tournament_round(_round int, _tournamentid int);
+DROP FUNCTION IF EXISTS update_tournament_round(_round int, _tournamentid int);
 CREATE FUNCTION update_tournament_round(_round int, _tournamentid int) returns void
     AS $$
     BEGIN
@@ -43,7 +45,7 @@ CREATE FUNCTION update_tournament_round(_round int, _tournamentid int) returns v
     COST 100;
 
 --add_player.  This stored procedure will add a player
-DROP FUNCTION add_player(_pname varchar);
+DROP FUNCTION IF EXISTS add_player(_pname varchar);
 CREATE FUNCTION add_player(_pname varchar) returns void
     AS $$
     BEGIN
@@ -53,7 +55,7 @@ CREATE FUNCTION add_player(_pname varchar) returns void
     COST 100;
 
 --register_swiss_tournament. This will add another tournament
-DROP FUNCTION register_swiss_tournament(_name varchar);
+DROP FUNCTION IF EXISTS register_swiss_tournament(_name varchar);
 CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
     AS $$
     BEGIN
@@ -63,7 +65,7 @@ CREATE or REPLACE FUNCTION register_swiss_tournament(_name varchar) returns void
     COST 100;
 
 --report_match.  this will report a match that happened.
-DROP FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int);
+DROP FUNCTION IF EXISTS report_match(_tournamentid int , _round int, _winner int, _loser int);
 CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner int, _loser int) returns void
     AS $$
     BEGIN
@@ -73,7 +75,7 @@ CREATE or REPLACE FUNCTION report_match(_tournamentid int , _round int, _winner 
     COST 100;
 
 --get_past_matches - This will get past matches
-DROP FUNCTION get_past_matches(_tournamentid int);
+DROP FUNCTION IF EXISTS get_past_matches(_tournamentid int);
 CREATE FUNCTION get_past_matches(_tournamentid int)
     RETURNS TABLE (winnerid int,
                    loserid int)
@@ -88,7 +90,7 @@ CREATE FUNCTION get_past_matches(_tournamentid int)
     $$ LANGUAGE PLPGSQL;
 
 --get_player_standings.  This will get the current standings.
-DROP FUNCTION get_player_standings(tourId int);
+DROP FUNCTION IF EXISTS get_player_standings(tourId int);
 CREATE or REPLACE FUNCTION get_player_standings(tourId int)
    RETURNS TABLE (userid int,
                   username varchar(30),
@@ -147,7 +149,7 @@ CREATE or REPLACE FUNCTION get_player_standings(tourId int)
     $$ LANGUAGE PLPGSQL;
 
 --get_swiss_pariings - This will get the pairings for the next round.
-DROP FUNCTION get_swiss_pairings(tourId int);
+DROP FUNCTION IF EXISTS get_swiss_pairings(tourId int);
 CREATE or REPLACE FUNCTION get_swiss_pairings(tourId int)
    RETURNS TABLE (userid int,
                   wins bigint,
