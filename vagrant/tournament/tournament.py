@@ -12,13 +12,20 @@ import NoMatch
 
 def connect(databasename_name="tournament"):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname={}".format(databasename_name))
+    try:
+        db = psycopg2.connect("dbname={}".format(databasename_name))
+        cursor = db.cursor()
+        return db, cursor
+    except Exception, e:
+        print "Database Error: " + e.message
 
-
-def deleteMatches(db=None, tournamentid=None):
+def deleteMatches(db=None, cursor=None, tournamentid=None):
     """Remove all the match records from the database."""
+
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
 
     sql_text = ""
     if not tournamentid:
@@ -26,45 +33,57 @@ def deleteMatches(db=None, tournamentid=None):
     else:
         sql_text = "delete from TournamentResults where tournamentId=" + str(tournamentid)
 
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def deletePlayers(db=None):
+    if not is_connected:
+        db.close();
+
+def deletePlayers(db=None, cursor=None):
     """Remove all the player records from the database."""
 
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "delete from Players"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
+    if not is_connected:
+        db.close();
 
-def countPlayers(db=None):
+
+
+def countPlayers(db=None, cursor=None):
     """Returns the number of players currently registered."""
 
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "select count(*) from Players"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     return cursor.fetchone()[0]
 
-def getPlayers(db):
+    if not is_connected:
+        db.close();
+
+def getPlayers(db, cursor):
     """
     This will get all players that will participate
     in Swiss tournament
-    :param db:
+    :param db, cursor:
     :return list of players:
     """
     sql_text = "select * from Players"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     return rows
 
-def registerSwissTournament(name, db=None):
+def registerSwissTournament(name, db=None, cursor=None):
     """
     This will register a new Swiss Tournament
     Allows you to run multiple tournaments
@@ -72,14 +91,19 @@ def registerSwissTournament(name, db=None):
     :param db:
     :return:
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "select register_swiss_tournament('" + name +"')"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def getPastMatchesForTournament(db, tournamentid):
+    if not is_connected:
+        db.close();
+
+def getPastMatchesForTournament(db, cursor, tournamentid):
     """
     This gets all past matches for a given tournament.
     This is needed to determin if someone has already
@@ -89,12 +113,11 @@ def getPastMatchesForTournament(db, tournamentid):
     :return list of matchups:
     """
     sql_text = "select * from get_past_matches(" + str(tournamentid) +")"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     return rows
 
-def getSwissTournamentId(name, db=None):
+def getSwissTournamentId(name, db=None, cursor=None):
     """
     This will get the tournamentid for a given
     Swiss Tournament name.
@@ -102,17 +125,23 @@ def getSwissTournamentId(name, db=None):
     :param db:
     :return id of swiss tournamanent:
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "select id from SwissTournament where name='" + name +"'"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
         return row[0]
+
+    if not is_connected:
+        db.close();
+
     return 0
 
-def updateSwissTournamentRound(tournament_id, round, db=None):
+def updateSwissTournamentRound(tournament_id, round, db=None, cursor=None):
     """
     Update the round the swiss tournament is in.
     :param tournament_id:
@@ -120,27 +149,37 @@ def updateSwissTournamentRound(tournament_id, round, db=None):
     :param db:
     :return:
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "select update_tournament_round(" + str(round) + "," +  str(tournament_id) +")"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def deleteSwissTournaments(db=None):
+    if not is_connected:
+        db.close();
+
+def deleteSwissTournaments(db=None, cursor=None):
     """
     This will delete a swiss tournament
     :param db:
     :return:
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "delete from SwissTournament"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def registerPlayer(name, db=None):
+    if not is_connected:
+        db.close();
+
+def registerPlayer(name, db=None, cursor=None):
     """Adds a player to the tournament database.
   
     The database assigns a unique serial id number for the player.  (This
@@ -149,14 +188,19 @@ def registerPlayer(name, db=None):
     Args:
       name: the player's full name (need not be unique).
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
+
     sql_text = "select add_player('" + name +"')"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
 
-def playerStandings(tournament_id, db=None):
+    if not is_connected:
+        db.close();
+
+def playerStandings(tournament_id, db=None, cursor=None):
     """Returns a list of the players and their win records, sorted by wins.
 
     The first entry in the list should be the player in first place, or a player
@@ -169,12 +213,13 @@ def playerStandings(tournament_id, db=None):
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
 
 
     sql_text = "select * from get_player_standings(" + str(tournament_id) + ")"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
 
@@ -184,29 +229,36 @@ def playerStandings(tournament_id, db=None):
     """
     if len(rows) == 0:
         sql_text = "select id, username, 0 as wins, 0 as rounds from Players"
-        cursor = db.cursor()
         cursor.execute(sql_text)
         prows = cursor.fetchall()
         for row in prows:
             rows.append(row)
+
+    if not is_connected:
+        db.close();
+
     return rows
 
-def reportMatch(winner, loser, tournamentid, current_round=1, db=None):
+def reportMatch(winner, loser, tournamentid, current_round=1, db=None, cursor=None):
     """Records the outcome of a single match between two players.
 
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
 
     sql_text = "select report_match(" + str(tournamentid) +"," + str(current_round) \
                + "," + str(winner) + "," + str(loser) + ")"
 
-    cursor = db.cursor()
     cursor.execute(sql_text)
     db.commit()
+
+    if not is_connected:
+        db.close();
 
 def addPlayerForPairng(wins, player):
     """
@@ -224,7 +276,7 @@ def addPlayerForPairng(wins, player):
         list = wins[player[1]]
         list.append(player)
 
-def getSwissPairings(tournament_id, db, wins):
+def getSwissPairings(tournament_id, db, cursor, wins):
     """
     This will call a stored procedure to get the swiss pairings
     :param tournament_id:
@@ -233,14 +285,13 @@ def getSwissPairings(tournament_id, db, wins):
     :return:
     """
     sql_text = "select * from get_swiss_pairings(" + str(tournament_id) +")"
-    cursor = db.cursor()
     cursor.execute(sql_text)
     rows = cursor.fetchall()
     for row in rows:
         addPlayerForPairng(wins, row)
 
 
-def swissPairings(tournament_id, db=None, pastMatches=None):
+def swissPairings(tournament_id, db=None, cursor=None,pastMatches=None):
     """Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
@@ -256,11 +307,13 @@ def swissPairings(tournament_id, db=None, pastMatches=None):
         name2: the second player's name
     """
     #sql_text="select winnerid, count(*) as wins from TournamentResults group by winnerid order by wins"
+    is_connected = True
     if not db:
-        db = connect()
+        db, cursor = connect()
+        is_connected = False
 
     wins = dict()
-    getSwissPairings(tournament_id, db, wins)
+    getSwissPairings(tournament_id, db, cursor, wins)
     if pastMatches:
         for win in wins:
             nomatch = NoMatch.NoRematch(wins, win, pastMatches)
@@ -282,6 +335,9 @@ def swissPairings(tournament_id, db=None, pastMatches=None):
                 pairinglist.append(row[0])
                 pairinglist.append(row[2])
                 pairing += 1
+
+    if not is_connected:
+        db.close();
 
     return swisspairing
 

@@ -51,7 +51,7 @@ class SwissTournament(object):
         self.swisspairing = []
         self.numplayers = None
         self.supportodd = supportodd
-        self.database = tournament.connect()
+        self.database, self.cursor = tournament.connect()
         self.logger = logger
         self.output_fd = output_fd
 
@@ -61,7 +61,7 @@ class SwissTournament(object):
         :param filename:
         :return:
         """
-        tournament.deletePlayers(self.database)
+        tournament.deletePlayers(self.database,self.cursor)
         try:
             players = open(filename, "r")
         except IOError, error:
@@ -69,7 +69,7 @@ class SwissTournament(object):
         else:
             for line in players:
                 player = line.strip('\n')
-                tournament.registerPlayer(player, self.database)
+                tournament.registerPlayer(player, self.database, self.cursor)
         finally:
             players.close()
 
@@ -78,7 +78,7 @@ class SwissTournament(object):
         This sets the number of players in the tournament
         :return:
         """
-        players = tournament.countPlayers(self.database)
+        players = tournament.countPlayers(self.database, self.cursor)
         self.logger.info("Number of players " + str(players))
         self.numplayers = players
 
@@ -92,7 +92,7 @@ class SwissTournament(object):
 
         del self.swisspairing[:]
 
-        players = tournament.getPlayers(self.database)
+        players = tournament.getPlayers(self.database, self.cursor)
 
         count = 0
         pairing = 0
@@ -133,7 +133,7 @@ class SwissTournament(object):
         """
         html_file = create_html_page("Overall Tournament Results")
 
-        results = tournament.playerStandings(0, self.database)
+        results = tournament.playerStandings(0, self.database, self.cursor)
         print_html_standings(html_file, results, 0)
 
         html_file.write("</div>\n</body>\n</html>\n")
@@ -154,49 +154,65 @@ class SwissTournament(object):
         html_file = create_html_page(tournament_name)
 
         self.load_players_from_db()
-        tournament.registerSwissTournament(tournament_name, self.database)
+        tournament.registerSwissTournament(tournament_name, self.database,self.cursor)
         tournament_id = tournament.getSwissTournamentId(tournament_name,
-                                                        self.database)
+                                                        self.database,
+                                                        self.cursor)
 
-        results = tournament.playerStandings(tournament_id, self.database)
+        results = tournament.playerStandings(tournament_id, self.database,
+                                             self.cursor)
         print_standings(results, 1, self.output_fd)
 
         self.play_round(tournament_id, 1)
-        tournament.updateSwissTournamentRound(tournament_id, 1, self.database)
-        results = tournament.playerStandings(tournament_id, self.database)
+        tournament.updateSwissTournamentRound(tournament_id, 1, self.database,
+                                              self.cursor)
+        results = tournament.playerStandings(tournament_id, self.database,
+                                             self.cursor)
         print_standings(results, 1, self.output_fd)
         print_html_standings(html_file, results, 1)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
-                                                             tournament_id)
+                                                             self.cursor,
+                                                              tournament_id)
         self.swisspairing = tournament.swissPairings(tournament_id,
                                                     self.database,
+                                                    self.cursor,
                                                     past_matches)
         self.play_round(tournament_id, 2)
-        tournament.updateSwissTournamentRound(tournament_id, 2, self.database)
-        results = tournament.playerStandings(tournament_id, self.database)
+        tournament.updateSwissTournamentRound(tournament_id, 2, self.database,
+                                              self.cursor)
+        results = tournament.playerStandings(tournament_id, self.database,
+                                             self.cursor)
         print_standings(results, 2, self.output_fd)
         print_html_standings(html_file, results, 2)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
+                                                              self.cursor,
                                                               tournament_id)
         self.swisspairing = tournament.swissPairings(tournament_id,
                                                      self.database,
+                                                     self.cursor,
                                                     past_matches)
         self.play_round(tournament_id, 3, past_matches)
-        tournament.updateSwissTournamentRound(tournament_id, 3, self.database)
-        results = tournament.playerStandings(tournament_id, self.database)
+        tournament.updateSwissTournamentRound(tournament_id, 3, self.database,
+                                              self.cursor)
+        results = tournament.playerStandings(tournament_id, self.database,
+                                             self.cursor)
         print_standings(results, 3, self.output_fd)
         print_html_standings(html_file, results, 3)
 
         past_matches = tournament.getPastMatchesForTournament(self.database,
+                                                              self.cursor,
                                                               tournament_id)
         self.swisspairing = tournament.swissPairings(tournament_id,
                                                      self.database,
+                                                     self.cursor,
                                                     past_matches)
         self.play_round(tournament_id, 4, past_matches)
-        tournament.updateSwissTournamentRound(tournament_id, 4, self.database)
-        results = tournament.playerStandings(tournament_id, self.database)
+        tournament.updateSwissTournamentRound(tournament_id, 4, self.database,
+                                              self.cursor)
+        results = tournament.playerStandings(tournament_id, self.database,
+                                             self.cursor)
         print_standings(results, 4, self.output_fd)
         print_html_standings(html_file, results, 4)
 
@@ -228,16 +244,19 @@ class SwissTournament(object):
                 if pairings[2] == -1: #Odd Player
                     tournament.reportMatch(pairings[0], pairings[2],
                                            tournament_id, current_round,
-                                           self.database)
+                                           self.database,
+                                           self.cursor)
                 else:
                     if aval > bval:
                         tournament.reportMatch(pairings[0], pairings[2],
                                                tournament_id, current_round,
-                                               self.database)
+                                               self.database,
+                                               self.cursor)
                     else:
                         tournament.reportMatch(pairings[2], pairings[0],
                                                tournament_id, current_round,
-                                               self.database)
+                                               self.database,
+                                               self.cursor)
 
 def create_html_page(tournament_name):
     """
@@ -337,8 +356,8 @@ def main():
             raise IOError(error)
         else:
             myswiss = SwissTournament(False, logger, output_fd)
-            tournament.deleteMatches(myswiss.database)
-            tournament.deleteSwissTournaments(myswiss.database)
+            tournament.deleteMatches(myswiss.database,myswiss.cursor)
+            tournament.deleteSwissTournaments(myswiss.database,myswiss.cursor)
 
             if not config_parser.has_option("run_mode", "player_file"):
                 raise TournamentExeption("No player_file specified in run_mode section of confguration file")
@@ -358,6 +377,7 @@ def main():
                 myswiss.start_tournament(next_tournament, web_support)
 
             myswiss.overall_tournament_results(web_support)
+            myswiss.database.close()
         finally:
             output_fd.close()
 
