@@ -10,9 +10,9 @@ import psycopg2
 import NoMatch
 
 
-def connect():
+def connect(databasename_name="tournament"):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    return psycopg2.connect("dbname={}".format(databasename_name))
 
 
 def deleteMatches(db=None, tournamentid=None):
@@ -49,10 +49,7 @@ def countPlayers(db=None):
     sql_text = "select count(*) from Players"
     cursor = db.cursor()
     cursor.execute(sql_text)
-    rows = cursor.fetchall()
-    for row in rows:
-        return row[0];
-    return 0
+    return cursor.fetchone()[0]
 
 def getPlayers(db):
     """
