@@ -15,7 +15,7 @@ CREATE DATABASE tournament;
 DROP TABLE IF EXISTS Players;
 CREATE TABLE Players(
 id serial,
-username varchar(30),
+username varchar(30) NOT NULL,
 PRIMARY KEY(id));
 
 --The SwissTournament contains all the tournaments that are going on.
@@ -31,11 +31,11 @@ DROP TABLE IF EXISTS TournamentResults;
 CREATE TABLE TournamentResults(
 tournamentId int,
 round int,
-winnerId int,
-loserId int);
+winnerId int REFERENCES Players(id) ON DELETE CASCADE,
+loserId int REFERENCES Players(id) ON DELETE CASCADE);
 
 --update_tournament_round. This stored procedure will update the current round for a tournament
-DROP FUNCTION IF EXISTS update_tournament_round(_round int, _tournamentid int);
+DROP FUNCTION IF EXISTS update_tournament_round(int,int);
 CREATE FUNCTION update_tournament_round(_round int, _tournamentid int) returns void
     AS $$
     BEGIN
